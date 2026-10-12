@@ -1,6 +1,6 @@
 // Garde l'appli en cache pour qu'elle s'ouvre même sans réseau.
 // Changer le numéro de version à chaque mise à jour de l'appli.
-const CACHE = "avatar-v1";
+const CACHE = "avatar-v2";
 const FICHIERS = ["./", "./index.html", "./app.js", "./config.js", "./app.css", "./manifest.json", "./icone-192.png", "./icone-512.png"];
 
 self.addEventListener("install", (e) => {
