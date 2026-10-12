@@ -1,0 +1,412 @@
+:root {
+  --fond: #1d1a18;
+  --panneau: #282321;
+  --bord: #3a332f;
+  --texte: #f1e9e1;
+  --texte-doux: #b5a89c;
+  --cuivre: #c8733c;
+  --cuivre-clair: #e39a63;
+  --creme: #efe4d2;
+  --bulle-moi: #3b4a52;
+  --bulle-elle: #352d29;
+}
+
+* { box-sizing: border-box; }
+
+html, body { height: 100%; margin: 0; }
+
+body {
+  background: var(--fond);
+  color: var(--texte);
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+button {
+  font: inherit;
+  color: var(--texte);
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  border-radius: 999px;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+button:hover { border-color: var(--cuivre); }
+
+/* --- Barre du haut --- */
+.barre {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--bord);
+}
+.barre h1 { font-size: 18px; margin: 0; font-weight: 600; }
+.pastille {
+  width: 10px; height: 10px; border-radius: 50%;
+  background: #5cc26e; box-shadow: 0 0 8px #5cc26e;
+}
+.mode { color: var(--texte-doux); font-size: 13px; margin-right: auto; }
+.icone { padding: 6px 10px; font-size: 16px; }
+
+/* --- Scène --- */
+.scene {
+  flex: 1;
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  min-height: 0;
+}
+
+.visio {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  min-height: 0;
+}
+
+.cadre {
+  position: relative;
+  height: calc(100vh - 170px);
+  max-height: 820px;
+  min-height: 300px;
+  aspect-ratio: 9 / 16;
+  border-radius: 18px;
+  overflow: hidden;
+  background: var(--creme);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, .5);
+}
+
+.calque {
+  position: absolute; inset: 0;
+  opacity: 0;
+  transition: opacity .35s ease;
+}
+.calque.visible { opacity: 1; }
+.calque video, .calque img {
+  position: absolute;
+  left: 0;
+  top: var(--media-haut, 0);
+  width: 100%;
+  height: var(--media-hauteur, 100%);
+  object-fit: cover;
+  transform: scale(var(--zoom, 1));
+  display: block;
+}
+
+.etiquette {
+  position: absolute; left: 10px; bottom: 10px;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, .45);
+  color: #fff;
+}
+
+.bulles {
+  display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+  max-width: 460px;
+}
+.bulles button { font-size: 14px; }
+.bulles button:hover { background: var(--cuivre); border-color: var(--cuivre); }
+
+/* --- Discussion --- */
+.discussion {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  border-radius: 18px;
+  overflow: hidden;
+}
+
+.fil {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.msg {
+  max-width: 80%;
+  padding: 10px 14px;
+  border-radius: 16px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+}
+.msg.elle { background: var(--bulle-elle); align-self: flex-start; border-bottom-left-radius: 4px; }
+.msg.moi { background: var(--bulle-moi); align-self: flex-end; border-bottom-right-radius: 4px; }
+.msg.info { align-self: center; background: none; color: var(--texte-doux); font-size: 13px; text-align: center; }
+.msg.attente { color: var(--texte-doux); font-style: italic; }
+
+.saisie {
+  display: flex; gap: 8px;
+  padding: 12px;
+  border-top: 1px solid var(--bord);
+}
+.saisie input {
+  min-width: 0;
+  flex: 1;
+  font: inherit;
+  color: var(--texte);
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  border-radius: 999px;
+  padding: 10px 16px;
+}
+.saisie input:focus { outline: none; border-color: var(--cuivre); }
+.saisie button { background: var(--cuivre); border-color: var(--cuivre); }
+
+/* --- Réglages --- */
+.reglages {
+  position: fixed; inset: 0;
+  background: rgba(0, 0, 0, .6);
+  display: flex; justify-content: flex-end;
+}
+.reglages[hidden] { display: none; }
+.reglages-boite {
+  width: min(420px, 100%);
+  height: 100%;
+  overflow-y: auto;
+  background: var(--panneau);
+  border-left: 1px solid var(--bord);
+  padding: 20px;
+}
+.reglages h2 { margin-top: 0; }
+.reglages h3 { font-size: 15px; color: var(--cuivre-clair); margin: 22px 0 8px; }
+.tests { display: flex; flex-wrap: wrap; gap: 6px; }
+.tests button { font-size: 13px; padding: 6px 12px; }
+.etat-medias { list-style: none; padding: 0; margin: 0; font-size: 13px; line-height: 1.7; }
+.etat-medias .ok { color: #7fd08c; }
+.etat-medias .secours { color: #e3c063; }
+.etat-medias .manque { color: #e07a6a; }
+.aide { font-size: 13px; color: var(--texte-doux); line-height: 1.5; }
+.reglages input {
+  width: 100%;
+  font: inherit; color: var(--texte);
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  padding: 8px 10px;
+}
+.ligne { display: flex; gap: 8px; margin-top: 8px; }
+.discret { background: none; color: var(--texte-doux); }
+.fermer { margin-top: 28px; width: 100%; }
+
+select {
+  flex: 1;
+  min-width: 0;
+  font: inherit; color: var(--texte);
+  background: var(--fond);
+  border: 1px solid var(--bord);
+  border-radius: 8px;
+  padding: 8px;
+}
+.curseur {
+  display: flex; align-items: center; gap: 10px;
+  font-size: 14px; margin: 6px 0;
+}
+.reglages .curseur input { flex: 1; padding: 0; }
+.curseur span { width: 40px; text-align: right; color: var(--texte-doux); }
+#btn-compact[aria-pressed="true"] { border-color: var(--cuivre); }
+
+/* --- Sous-titre : seulement en mode téléphone --- */
+.sous-titre { display: none; }
+
+/* --- Mode téléphone : Claudia seule, bulles posées sur la vidéo --- */
+body.compact .scene {
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  gap: 8px;
+}
+body.compact .visio { flex: 1; min-height: 0; width: 100%; }
+body.compact .cadre {
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  max-width: 100%;
+}
+body.compact .etiquette { display: none; }
+.onglets { display: none; }
+.superpose { display: none; }
+body.compact .superpose {
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 60%;
+}
+body.compact .sous-titre:not([hidden]) {
+  display: block;
+  padding: 10px 14px;
+  border-radius: 14px;
+  background: rgba(20, 16, 14, .72);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 15px;
+  line-height: 1.4;
+  overflow-y: auto;
+  min-height: 0;
+}
+body.compact .bulles { max-width: none; }
+body.compact .bulles button {
+  background: rgba(20, 16, 14, .6);
+  border-color: rgba(255, 255, 255, .25);
+  backdrop-filter: blur(4px);
+  font-size: 13px;
+  padding: 6px 12px;
+}
+body.compact .discussion {
+  flex: none;
+  width: 100%;
+  max-width: 520px;
+  background: none;
+  border: none;
+}
+body.compact .fil { display: none; }
+body.compact .saisie { border-top: none; padding: 0; }
+
+/* Onglets Visage / Texte (on peut aussi glisser le doigt) */
+body.compact .onglets {
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+  padding: 8px 0 0;
+}
+.onglets button { font-size: 13px; padding: 4px 14px; color: var(--texte-doux); }
+.onglets button.actif { background: var(--cuivre); border-color: var(--cuivre); color: #fff; }
+
+/* Vue texte : la discussion complète, sans le visage */
+body.compact[data-vue="texte"] .visio { display: none; }
+body.compact[data-vue="texte"] .discussion {
+  flex: 1;
+  min-height: 0;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+}
+body.compact[data-vue="texte"] .fil { display: flex; }
+body.compact[data-vue="texte"] .saisie { padding: 12px; border-top: 1px solid var(--bord); }
+
+/* En mode téléphone, la voix suit la vue (visage = voix, texte = silence) */
+body.compact #btn-voix { display: none; }
+
+/* Bouton micro : cuivré pendant la conversation, pulse quand Claudia écoute */
+.saisie .micro { background: var(--panneau); border-color: var(--bord); padding: 8px 14px; }
+.saisie .micro.actif { background: var(--cuivre); border-color: var(--cuivre); }
+.saisie .micro.ecoute { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(227, 154, 99, .7); }
+  50% { box-shadow: 0 0 0 10px rgba(227, 154, 99, 0); }
+}
+
+/* --- Version en ligne --- */
+:root { color-scheme: dark; }
+html, body { height: 100%; }
+.absente {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 12px; padding: 24px; text-align: center;
+  background: var(--panneau); color: var(--texte-doux);
+}
+.absente[hidden] { display: none; }
+.absente button { background: var(--cuivre); border-color: var(--cuivre); }
+.etat-medias li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 3px 0; }
+.choisir {
+  font-size: 13px; padding: 4px 12px; cursor: pointer; white-space: nowrap;
+  border: 1px solid var(--bord); border-radius: 999px;
+}
+.choisir:hover, .choisir:focus-within { border-color: var(--cuivre); }
+.case { display: flex; gap: 8px; align-items: center; font-size: 14px; margin: 6px 0; }
+.reglages .case input { width: auto; }
+button:focus-visible, .choisir:focus-within, input:focus-visible { outline: 2px solid var(--cuivre-clair); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .calque { transition: none; } .saisie .micro.ecoute { animation: none; } }
+.etiquette:empty { display: none; }
+.avis {
+  position: absolute; left: 10px; right: 10px; top: 10px;
+  padding: 10px 14px; border-radius: 14px;
+  background: rgba(20, 16, 14, .78); color: #fff;
+  font-size: 15px; line-height: 1.4;
+  max-height: 45%; overflow-y: auto;
+}
+
+/* --- Assistant de création de l'avatar --- */
+.assistant {
+  position: fixed; inset: 0;
+  background: var(--fond);
+  overflow-y: auto;
+  padding: 24px 16px;
+  z-index: 10;
+}
+.assistant-boite {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex; flex-direction: column; gap: 14px;
+}
+.assistant .etape { display: flex; flex-direction: column; gap: 14px; }
+.assistant .etape[hidden] { display: none; }
+.assistant h2 { margin: 0; font-size: 22px; text-wrap: balance; }
+.progression { margin: 0; font-size: 13px; color: var(--cuivre-clair); letter-spacing: .04em; text-transform: uppercase; }
+.champ { display: flex; flex-direction: column; gap: 6px; font-size: 14px; color: var(--texte-doux); }
+.champ input, .champ textarea {
+  font: inherit; font-size: 15px; color: var(--texte);
+  background: var(--panneau);
+  border: 1px solid var(--bord); border-radius: 10px;
+  padding: 10px 12px;
+}
+.champ textarea { resize: vertical; line-height: 1.45; }
+.champ input:focus, .champ textarea:focus { outline: none; border-color: var(--cuivre); }
+.choix { border: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 8px 20px; font-size: 15px; }
+.choix legend { font-size: 14px; color: var(--texte-doux); margin-bottom: 6px; width: 100%; }
+.choix label { display: flex; align-items: center; gap: 6px; }
+.etat-medias small { display: block; color: var(--texte-doux); font-size: 12px; }
+.principal { background: var(--cuivre); border-color: var(--cuivre); color: #fff; }
+.navigation { justify-content: space-between; }
+.erreur { color: #e07a6a; font-size: 14px; margin: 0; min-height: 1em; }
+.alerte { color: #e3c063; }
+#btn-modifier-avatar { width: 100%; margin-bottom: 4px; }
+
+/* --- Appli autonome --- */
+html, body { height: 100%; }
+body { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+a { color: var(--cuivre-clair); }
+.actions-media { display: flex; gap: 6px; flex-shrink: 0; }
+.import { align-self: flex-start; }
+.reglages .choix { margin: 8px 0; }
+.reglages .champ { margin: 6px 0; }
+.studio {
+  position: fixed; inset: 0; z-index: 20;
+  background: rgba(0, 0, 0, .85);
+  display: flex; align-items: center; justify-content: center;
+  padding: 16px;
+}
+.studio[hidden] { display: none; }
+.studio-boite {
+  width: min(420px, 100%);
+  max-height: 100%;
+  overflow-y: auto;
+  background: var(--panneau);
+  border: 1px solid var(--bord);
+  border-radius: 18px;
+  padding: 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.studio h2 { margin: 0; font-size: 20px; }
+#studio-video {
+  width: 100%; max-height: 55vh;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  border-radius: 12px;
+  background: #000;
+}
+#studio-video.miroir { transform: scaleX(-1); }
+.compte { margin: 0; font-size: 18px; color: var(--cuivre-clair); min-height: 1.4em; text-align: center; }

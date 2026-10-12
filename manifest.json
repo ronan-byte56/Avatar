@@ -1,0 +1,15 @@
+{
+  "name": "Avatar",
+  "short_name": "Avatar",
+  "description": "Un personnage qui te parle en visio, avec son visage, sa voix et son caractère.",
+  "icons": [
+    { "src": "icone-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icone-512.png", "sizes": "512x512", "type": "image/png" }
+  ],
+  "start_url": "./index.html",
+  "background_color": "#1d1a18",
+  "theme_color": "#1d1a18",
+  "display": "standalone",
+  "scope": "./",
+  "lang": "fr-FR"
+}

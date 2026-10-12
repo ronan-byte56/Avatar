@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Avatar</title>
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#1d1a18">
+  <link rel="icon" href="icone-192.png">
+  <link rel="apple-touch-icon" href="icone-192.png">
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header class="barre">
+    <span class="pastille" aria-hidden="true"></span>
+    <h1 id="nom">Avatar</h1>
+    <span id="mode" class="mode"></span>
+    <button id="btn-compact" class="icone" title="Mode téléphone : seulement l'avatar, avec les bulles sur la vidéo" aria-pressed="false">📱</button>
+    <button id="btn-voix" class="icone" title="Faire parler l'avatar" aria-pressed="false">🔇</button>
+    <button id="btn-reglages" class="icone" title="Réglages">⚙</button>
+  </header>
+
+  <nav class="onglets" id="onglets">
+    <button type="button" data-vue="visage">Visage</button>
+    <button type="button" data-vue="texte">Texte</button>
+  </nav>
+
+  <main class="scene" id="scene">
+    <section class="visio">
+      <div class="cadre" id="cadre">
+        <div class="calque" id="calque-a"></div>
+        <div class="calque" id="calque-b"></div>
+        <div class="absente" id="absente">
+          <p id="absente-texte">Ton avatar n'a pas encore de visage.</p>
+          <button type="button" id="btn-ouvrir-medias">Ajouter ses vidéos</button>
+        </div>
+        <div class="etiquette" id="etiquette"></div>
+        <div class="avis" id="avis" hidden></div>
+        <div class="superpose" id="superpose"></div>
+      </div>
+      <div class="bulles" id="bulles"></div>
+    </section>
+
+    <section class="discussion">
+      <div class="fil" id="fil" aria-live="polite"></div>
+      <form class="saisie" id="saisie">
+        <input id="message" type="text" autocomplete="off" placeholder="Écris à ton avatar…">
+        <button type="button" id="btn-micro" class="micro" title="Parler à l'avatar">🎤</button>
+        <button type="submit">Envoyer</button>
+      </form>
+    </section>
+  </main>
+
+  <aside class="reglages" id="reglages" hidden>
+    <div class="reglages-boite">
+      <h2>Réglages</h2>
+      <button type="button" id="btn-modifier-avatar" class="principal">Modifier mon avatar</button>
+
+      <h3>Ses vidéos</h3>
+      <ul class="etat-medias" id="etat-medias"></ul>
+
+      <h3>Tester les réactions</h3>
+      <div class="tests" id="tests"></div>
+
+      <h3>Voix</h3>
+        <fieldset class="choix">
+          <legend>Type de voix</legend>
+          <label><input type="radio" name="type-voix" value="appareil"> Voix de l'appareil (gratuite)</label>
+          <label><input type="radio" name="type-voix" value="elevenlabs"> ElevenLabs (voix naturelles)</label>
+        </fieldset>
+        <p class="aide si-appareil">Gratuite, mais plus ou moins naturelle selon l'appareil. Sur PC, le navigateur Edge a les meilleures voix (« Natural »). Sur Android, des voix de meilleure qualité s'installent dans Paramètres → Synthèse vocale.</p>
+        <div class="si-eleven" hidden>
+          <p class="aide">Voix très naturelles. Formule gratuite d'environ 10 minutes de parole par mois, puis payant. <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">Créer une clé ElevenLabs</a>.</p>
+          <label class="champ">Clé ElevenLabs <input id="cle-elevenlabs" type="password" autocomplete="off" placeholder="Colle la clé ici"></label>
+          <p class="aide" id="eleven-etat"></p>
+        </div>
+        <div class="ligne">
+          <select id="choix-voix"></select>
+          <button type="button" id="test-voix">Écouter</button>
+        </div>
+        <div class="si-appareil">
+          <label class="curseur">Débit <input id="debit" type="range" min="0.7" max="1.3" step="0.05"></label>
+          <label class="curseur">Hauteur <input id="hauteur" type="range" min="0.7" max="1.3" step="0.05"></label>
+        </div>
+
+      <h3>Cerveau</h3>
+        <fieldset class="choix">
+          <legend>Le cerveau</legend>
+          <label><input type="radio" name="fournisseur" value="claude"> Claude</label>
+          <label><input type="radio" name="fournisseur" value="openai"> ChatGPT</label>
+          <label><input type="radio" name="fournisseur" value="gemini"> Gemini</label>
+          <label><input type="radio" name="fournisseur" value="mistral"> Mistral</label>
+        </fieldset>
+        <p class="aide" id="prix"></p>
+        <p class="aide"><a id="lien-cle" href="#" target="_blank" rel="noopener"></a> (ouvre le site, connecte-toi, crée une clé et copie-la).</p>
+        <label class="champ">Clé API <input id="cle-cerveau" type="password" autocomplete="off" placeholder="Colle la clé ici"></label>
+        <label class="champ">Modèle (laisse tel quel si tu ne sais pas) <input id="modele" type="text" autocomplete="off"></label>
+        <div class="ligne"><button type="button" id="tester-cerveau">Tester</button></div>
+        <p class="aide" id="etat-cerveau" aria-live="polite"></p>
+        <div class="ligne"><button type="button" id="enregistrer-cerveau">Enregistrer</button></div>
+
+      <h3>Cacher le filigrane</h3>
+      <p class="aide">Coupe une bande en haut ou en bas de la vidéo, jusqu'à ce que le logo disparaisse.</p>
+      <label class="curseur">Couper le haut <input id="rogne-haut" type="range" min="0" max="20" step="1"> <span id="val-haut"></span></label>
+      <label class="curseur">Couper le bas <input id="rogne-bas" type="range" min="0" max="20" step="1"> <span id="val-bas"></span></label>
+
+      <h3>Conversation</h3>
+      <p class="aide">Tout reste sur cet appareil : profil, clés, vidéos et conversation. Rien ne passe par un serveur à part le cerveau et la voix choisis.</p>
+      <div class="ligne"><button id="btn-oublier" class="discret">Effacer la conversation</button></div>
+
+      <button id="btn-fermer" class="fermer">Fermer</button>
+    </div>
+  </aside>
+
+  <div class="assistant" id="assistant" hidden>
+    <div class="assistant-boite">
+      <p class="progression" id="ass-progression"></p>
+
+      <section class="etape" data-n="1">
+        <h2>Créons ton avatar</h2>
+        <p class="aide">Un personnage qui te parle en visio, avec son visage, sa voix et son caractère.</p>
+        <label class="champ">Son nom <input id="f-nom" type="text" placeholder="Claudia, Alfred…" autocomplete="off"></label>
+        <fieldset class="choix">
+          <legend>C'est</legend>
+          <label><input type="radio" name="genre" id="f-genre-f"> une femme</label>
+          <label><input type="radio" name="genre" id="f-genre-m"> un homme</label>
+        </fieldset>
+        <label class="champ">Ton prénom <input id="f-prenom" type="text" autocomplete="off"></label>
+        <label class="champ">Comment veux-tu qu'il ou elle t'appelle ? <input id="f-appellation" type="text" autocomplete="off" placeholder="Ton prénom, « Madame », « Chef »… (vide = ton prénom)"></label>
+        <fieldset class="choix">
+          <legend>Il ou elle te parle en</legend>
+          <label><input type="radio" name="adresse" id="f-tu"> te tutoyant</label>
+          <label><input type="radio" name="adresse" id="f-vous"> te vouvoyant</label>
+        </fieldset>
+      </section>
+
+      <section class="etape" data-n="2" hidden>
+        <h2>Qui est <span class="nom-avatar"></span> ?</h2>
+        <label class="champ">Son apparence
+          <textarea id="f-apparence" rows="3" placeholder="Ex. : un majordome anglais d'une soixantaine d'années, cheveux gris, costume sombre, nœud papillon."></textarea>
+        </label>
+        <label class="champ">Son rôle, son caractère, sa façon de parler
+          <textarea id="f-caractere" rows="6"></textarea>
+        </label>
+        <label class="choisir import">Importer un fichier (.md ou .txt) <input type="file" id="import-caractere" accept=".md,.txt,.markdown,text/plain,text/markdown" hidden></label>
+      </section>
+
+      <section class="etape" data-n="3" hidden>
+        <h2>Présente-toi à <span class="nom-avatar"></span></h2>
+        <p class="aide">Ce que tu écris ici, l'avatar le saura à chaque conversation. Tu peux aussi importer un fichier .md qui te décrit. Évite les informations sensibles.</p>
+        <label class="champ">Qui es-tu ?
+          <textarea id="f-portrait" rows="8" placeholder="Ton métier, tes projets, tes centres d'intérêt, ce que tu attends de lui ou d'elle…"></textarea>
+        </label>
+        <label class="choisir import">Importer un fichier (.md ou .txt) <input type="file" id="import-portrait" accept=".md,.txt,.markdown,text/plain,text/markdown" hidden></label>
+      </section>
+
+      <section class="etape" data-n="4" hidden>
+        <h2>Le visage de <span class="nom-avatar"></span></h2>
+        <p class="aide">Pour chaque expression : « Filmer » enregistre directement avec la caméra (consignes à l'écran), « Choisir » prend une vidéo ou une photo déjà faite. Une personne peut mimer les expressions : le son n'est jamais enregistré ni joué. Seul « Repos attentif » est indispensable.</p>
+        <ul class="etat-medias" id="ass-medias"></ul>
+      </section>
+
+      <section class="etape" data-n="5" hidden>
+        <h2>La voix de <span class="nom-avatar"></span></h2>
+        <fieldset class="choix">
+          <legend>Type de voix</legend>
+          <label><input type="radio" name="ass-type-voix" value="appareil"> Voix de l'appareil (gratuite)</label>
+          <label><input type="radio" name="ass-type-voix" value="elevenlabs"> ElevenLabs (voix naturelles)</label>
+        </fieldset>
+        <p class="aide si-appareil">Gratuite, mais plus ou moins naturelle selon l'appareil. Sur PC, le navigateur Edge a les meilleures voix (« Natural »). Sur Android, des voix de meilleure qualité s'installent dans Paramètres → Synthèse vocale.</p>
+        <div class="si-eleven" hidden>
+          <p class="aide">Voix très naturelles. Formule gratuite d'environ 10 minutes de parole par mois, puis payant. <a href="https://elevenlabs.io/app/settings/api-keys" target="_blank" rel="noopener">Créer une clé ElevenLabs</a>.</p>
+          <label class="champ">Clé ElevenLabs <input id="ass-cle-elevenlabs" type="password" autocomplete="off" placeholder="Colle la clé ici"></label>
+          <p class="aide" id="ass-eleven-etat"></p>
+        </div>
+        <div class="ligne">
+          <select id="ass-choix-voix"></select>
+          <button type="button" id="ass-test-voix">Écouter</button>
+        </div>
+        <div class="si-appareil">
+          <label class="curseur">Débit <input id="ass-debit" type="range" min="0.7" max="1.3" step="0.05"></label>
+          <label class="curseur">Hauteur <input id="ass-hauteur" type="range" min="0.7" max="1.3" step="0.05"></label>
+        </div>
+      </section>
+
+      <section class="etape" data-n="6" hidden>
+        <h2>Le cerveau de <span class="nom-avatar"></span></h2>
+        <p class="aide">C'est le service d'intelligence artificielle qui fait réfléchir l'avatar. Choisis-en un et colle sa clé. Gemini et Mistral ont une formule gratuite.</p>
+        <fieldset class="choix">
+          <legend>Le cerveau</legend>
+          <label><input type="radio" name="ass-fournisseur" value="claude"> Claude</label>
+          <label><input type="radio" name="ass-fournisseur" value="openai"> ChatGPT</label>
+          <label><input type="radio" name="ass-fournisseur" value="gemini"> Gemini</label>
+          <label><input type="radio" name="ass-fournisseur" value="mistral"> Mistral</label>
+        </fieldset>
+        <p class="aide" id="ass-prix"></p>
+        <p class="aide"><a id="ass-lien-cle" href="#" target="_blank" rel="noopener"></a> (ouvre le site, connecte-toi, crée une clé et copie-la).</p>
+        <label class="champ">Clé API <input id="ass-cle-cerveau" type="password" autocomplete="off" placeholder="Colle la clé ici"></label>
+        <label class="champ">Modèle (laisse tel quel si tu ne sais pas) <input id="ass-modele" type="text" autocomplete="off"></label>
+        <div class="ligne"><button type="button" id="ass-tester-cerveau">Tester</button></div>
+        <p class="aide" id="ass-etat-cerveau" aria-live="polite"></p>
+      </section>
+
+      <p class="erreur" id="ass-erreur" aria-live="polite"></p>
+      <div class="ligne navigation">
+        <button type="button" id="ass-retour" class="discret">Retour</button>
+        <button type="button" id="ass-suivant" class="principal">Suivant</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="studio" id="studio" hidden>
+    <div class="studio-boite">
+      <h2 id="studio-titre"></h2>
+      <p class="aide" id="studio-consigne"></p>
+      <video id="studio-video" muted playsinline autoplay></video>
+      <p class="compte" id="studio-compte" aria-live="polite"></p>
+      <div class="ligne navigation">
+        <button type="button" id="studio-fermer" class="discret">Annuler</button>
+        <button type="button" id="studio-filmer" class="principal">Filmer</button>
+        <button type="button" id="studio-garder" class="principal" hidden>Garder</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
