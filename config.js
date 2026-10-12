@@ -39,7 +39,7 @@ window.AVATAR_CONFIG = {
     },
     gemini: {
       nom: "Gemini (Google)",
-      modele: "gemini-2.5-flash",
+      modele: "gemini-flash-latest", // « le Flash le plus récent » selon Google
       cle: "https://aistudio.google.com/apikey",
       prix: "Formule gratuite avec un quota quotidien. En gratuit, Google peut utiliser les échanges pour améliorer ses modèles.",
     },

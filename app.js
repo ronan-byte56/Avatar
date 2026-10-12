@@ -532,7 +532,36 @@
   }
 
   // Un appel au cerveau choisi. messages : [{role: "user"|"assistant", content}].
-  async function appelerCerveau(systeme, messages, f, cle, mod) {
+  // Les modèles changent souvent de nom. Si celui demandé n'existe plus,
+  // on demande au service la liste de ses modèles et on prend le plus récent.
+  function numeroVersion(nom) {
+    return (nom.match(/\d+(\.\d+)?/g) || ["0"]).map(Number).reduce((a, n, i) => a + n / Math.pow(100, i), 0);
+  }
+  async function modeleDeSecours(f, cle) {
+    try {
+      if (f === "gemini") {
+        const r = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=200", { headers: { "x-goog-api-key": cle } });
+        const d = await r.json();
+        const noms = (d.models || [])
+          .filter((m) => (m.supportedGenerationMethods || []).includes("generateContent"))
+          .map((m) => m.name.replace(/^models\//, ""))
+          .filter((n) => /flash/.test(n) && !/lite|image|tts|live|audio|embed|exp|preview|thinking/.test(n));
+        noms.sort((a, b) => numeroVersion(b) - numeroVersion(a));
+        return noms[0] || null;
+      }
+      if (f === "openai") {
+        const r = await fetch("https://api.openai.com/v1/models", { headers: { Authorization: "Bearer " + cle } });
+        const d = await r.json();
+        const ids = (d.data || []).map((m) => m.id);
+        const choix = ids.filter((n) => /^gpt-[\d.]+-mini$/.test(n)).concat(ids.filter((n) => /^gpt-[\d.]+$/.test(n)));
+        choix.sort((a, b) => numeroVersion(b) - numeroVersion(a));
+        return choix[0] || null;
+      }
+    } catch (err) { /* liste indisponible */ }
+    return null;
+  }
+
+  async function appelerCerveau(systeme, messages, f, cle, mod, dejaEssaye) {
     f = f || fournisseur();
     cle = cle || CLES[f];
     mod = mod || modele();
@@ -582,7 +611,17 @@
       const detail = (d.error && (d.error.message || d.error)) || d.message || "erreur " + r.status;
       if (r.status === 401 || r.status === 403) throw { message: "La clé " + C.cerveaux[f].nom + " est refusée. Vérifie-la dans les réglages." };
       if (r.status === 429) throw { message: "Le quota de " + C.cerveaux[f].nom + " est atteint pour le moment. Réessaie plus tard." };
-      if (r.status === 404) throw { message: "Le modèle « " + mod + " » n'existe pas chez " + C.cerveaux[f].nom + ". Change-le dans les réglages." };
+      if (r.status === 404 || (r.status === 400 && /model/i.test(String(detail)))) {
+        const autre = !dejaEssaye && (await modeleDeSecours(f, cle));
+        if (autre && autre !== mod) {
+          const texte = await appelerCerveau(systeme, messages, f, cle, autre, true);
+          // Ça a marché avec l'autre modèle : on le garde pour la suite.
+          await enregistrerProfil({ cerveau: { fournisseur: f, modele: autre } });
+          for (const pre of ["", "ass-"]) if ($(pre + "modele")) $(pre + "modele").value = autre;
+          return texte;
+        }
+        throw { message: "Le modèle « " + mod + " » n'existe pas chez " + C.cerveaux[f].nom + ". Change-le dans les réglages." };
+      }
       throw { message: C.cerveaux[f].nom + " a répondu : " + String(detail).slice(0, 200) };
     }
     const texte = lireTexte(d).trim();
