@@ -1,6 +1,6 @@
 // Garde l'appli en cache pour qu'elle s'ouvre même sans réseau.
 // Changer le numéro de version à chaque mise à jour de l'appli.
-const CACHE = "avatar-v4";
+const CACHE = "avatar-v5";
 const FICHIERS = ["./", "./index.html", "./app.js", "./config.js", "./app.css", "./manifest.json", "./icone-192.png", "./icone-512.png"];
 
 self.addEventListener("install", (e) => {
@@ -17,7 +17,8 @@ self.addEventListener("activate", (e) => {
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET" || new URL(e.request.url).origin !== location.origin) return;
   e.respondWith(
-    fetch(e.request)
+    // « no-cache » : toujours demander au serveur si le fichier a changé.
+    fetch(e.request, { cache: "no-cache" })
       .then((r) => { const copie = r.clone(); caches.open(CACHE).then((c) => c.put(e.request, copie)); return r; })
       .catch(() => caches.match(e.request))
   );

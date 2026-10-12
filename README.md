@@ -19,4 +19,4 @@ Sur téléphone : ouvrir le lien dans Chrome, puis menu ⋮ → *Ajouter à l'é
 
 `index.html` (la page), `app.js` (le moteur), `config.js` (réglages communs : expressions, cerveaux et modèles par défaut), `app.css`, `manifest.json` et `sw.js` (appli installable), icônes.
 
-Après une modification, changer le numéro de version dans `sw.js` (`avatar-v1` → `avatar-v2`…) pour que les appareils récupèrent la nouvelle version.
+Après une modification, augmenter le numéro de version dans `sw.js` (`avatar-v5` → `avatar-v6`…) et dans `index.html` (`?v=5` → `?v=6` sur les trois fichiers) pour que les appareils récupèrent la nouvelle version.
