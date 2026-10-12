@@ -591,6 +591,8 @@
           contents: messages.map((m) => ({ role: m.role === "assistant" ? "model" : "user", parts: [{ text: m.content }] })),
         },
       };
+      // Réfléchir le moins possible avant de répondre : c'est une conversation, il faut aller vite.
+      if (lire("geminiSansNiveau") !== "1") options.body.generationConfig = { thinkingConfig: { thinkingLevel: "minimal" } };
       lireTexte = (d) => ((d.candidates && d.candidates[0] && d.candidates[0].content && d.candidates[0].content.parts) || []).map((p) => p.text || "").join("");
     } else {
       url = f === "openai" ? "https://api.openai.com/v1/chat/completions" : "https://api.mistral.ai/v1/chat/completions";
@@ -600,15 +602,26 @@
       };
       lireTexte = (d) => (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || "";
     }
-    let r;
-    try {
-      r = await fetch(url, { method: "POST", headers: options.headers, body: JSON.stringify(options.body) });
-    } catch (err) {
-      throw { message: "Impossible de joindre " + C.cerveaux[f].nom + ". Vérifie la connexion internet." };
+    let r, d;
+    // Service surchargé (erreur 500 à 504) : on réessaie deux fois, après une courte pause.
+    for (let essai = 0; essai < 3; essai++) {
+      try {
+        r = await fetch(url, { method: "POST", headers: options.headers, body: JSON.stringify(options.body) });
+      } catch (err) {
+        throw { message: "Impossible de joindre " + C.cerveaux[f].nom + ". Vérifie la connexion internet." };
+      }
+      d = await r.json().catch(() => ({}));
+      if (r.status < 500 || essai === 2) break;
+      await attendre(1500 * (essai + 1));
     }
-    const d = await r.json().catch(() => ({}));
     if (!r.ok) {
       const detail = (d.error && (d.error.message || d.error)) || d.message || "erreur " + r.status;
+      if (r.status >= 500) throw { message: C.cerveaux[f].nom + " est surchargé en ce moment. Réessaie dans une minute." };
+      // Ce modèle Gemini n'accepte pas le réglage de réflexion : on l'enlève et on recommence.
+      if (f === "gemini" && r.status === 400 && /thinking/i.test(String(detail)) && lire("geminiSansNiveau") !== "1") {
+        ecrire("geminiSansNiveau", "1");
+        return appelerCerveau(systeme, messages, f, cle, mod, dejaEssaye);
+      }
       if (r.status === 401 || r.status === 403) throw { message: "La clé " + C.cerveaux[f].nom + " est refusée. Vérifie-la dans les réglages." };
       if (r.status === 429) throw { message: "Le quota de " + C.cerveaux[f].nom + " est atteint pour le moment. Réessaie plus tard." };
       if (r.status === 404 || (r.status === 400 && /model/i.test(String(detail)))) {
@@ -622,7 +635,7 @@
         }
         throw { message: "Le modèle « " + mod + " » n'existe pas chez " + C.cerveaux[f].nom + ". Change-le dans les réglages." };
       }
-      throw { message: C.cerveaux[f].nom + " a répondu : " + String(detail).slice(0, 200) };
+      throw { message: C.cerveaux[f].nom + " a renvoyé une erreur (" + r.status + "). Réessaie ; si ça continue, vérifie la clé et le modèle dans les réglages." };
     }
     const texte = lireTexte(d).trim();
     if (!texte) throw { message: C.cerveaux[f].nom + " n'a rien répondu." };
