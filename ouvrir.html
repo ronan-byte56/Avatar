@@ -27,14 +27,16 @@
   // Les données sont dans le # de l'adresse : elles ne sont jamais envoyées au serveur.
   const p = new URLSearchParams(location.hash.slice(1));
   const num = (p.get("n") || "").replace(/[^\d+]/g, "");
-  const appel = p.get("type") === "tel";
+  const type = p.get("type");
+  const appel = type === "tel", wa = type === "wa";
   const texte = p.get("texte") || "";
   let lien = null;
-  if (/^\+?\d{3,15}$/.test(num)) lien = appel ? "tel:" + num : "sms:" + num + (texte ? "?body=" + encodeURIComponent(texte) : "");
+  if (wa) lien = "whatsapp://send?" + (num ? "phone=" + num.replace("+", "") + "&" : "") + "text=" + encodeURIComponent(texte);
+  else if (/^\+?\d{3,15}$/.test(num)) lien = appel ? "tel:" + num : "sms:" + num + (texte ? "?body=" + encodeURIComponent(texte) : "");
   const bouton = document.getElementById("bouton");
   if (lien) {
-    document.getElementById("titre").textContent = (appel ? "Appeler " : "SMS à ") + (p.get("nom") || num);
-    bouton.textContent = appel ? "📞 Appeler" : "✉️ Ouvrir les SMS";
+    document.getElementById("titre").textContent = wa ? "WhatsApp" + (num ? " à " + (p.get("nom") || num) : "") : (appel ? "Appeler " : "SMS à ") + (p.get("nom") || num);
+    bouton.textContent = wa ? "💬 Ouvrir WhatsApp" : appel ? "📞 Appeler" : "✉️ Ouvrir les SMS";
     bouton.href = lien;
     if (texte && !appel) { const q = document.getElementById("texte"); q.textContent = texte; q.hidden = false; }
     location.href = lien; // tente d'ouvrir directement ; sinon, le bouton reste là
