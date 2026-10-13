@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Ouvrir l'appli</title>
+<style>
+  :root { --fond: #1d1a18; --texte: #f1e9e1; --doux: #b5a89c; --cuivre: #c8733c; }
+  * { box-sizing: border-box; }
+  body { margin: 0; min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--fond); color: var(--texte); font-family: system-ui, sans-serif; padding: 24px 16px; text-align: center; }
+  main { max-width: 420px; width: 100%; }
+  a.bouton { display: block; padding: 18px; border-radius: 999px; background: var(--cuivre); color: #fff; font-size: 20px; text-decoration: none; margin: 16px 0; }
+  p { color: var(--doux); line-height: 1.5; }
+  blockquote { margin: 16px 0; padding: 12px 16px; border-left: 3px solid var(--cuivre); text-align: left; white-space: pre-wrap; }
+</style>
+</head>
+<body>
+<main>
+  <h1 id="titre">Ouvrir l'appli</h1>
+  <blockquote id="texte" hidden></blockquote>
+  <a class="bouton" id="bouton" href="#">Ouvrir</a>
+  <p>Ensuite, reviens à Claudia avec le bouton « retour » du téléphone.</p>
+</main>
+<script>
+  // Relais pour les liens sms: et tel:, bloqués dans la page claude.ai.
+  // Les données sont dans le # de l'adresse : elles ne sont jamais envoyées au serveur.
+  const p = new URLSearchParams(location.hash.slice(1));
+  const num = (p.get("n") || "").replace(/[^\d+]/g, "");
+  const appel = p.get("type") === "tel";
+  const texte = p.get("texte") || "";
+  let lien = null;
+  if (/^\+?\d{3,15}$/.test(num)) lien = appel ? "tel:" + num : "sms:" + num + (texte ? "?body=" + encodeURIComponent(texte) : "");
+  const bouton = document.getElementById("bouton");
+  if (lien) {
+    document.getElementById("titre").textContent = (appel ? "Appeler " : "SMS à ") + (p.get("nom") || num);
+    bouton.textContent = appel ? "📞 Appeler" : "✉️ Ouvrir les SMS";
+    bouton.href = lien;
+    if (texte && !appel) { const q = document.getElementById("texte"); q.textContent = texte; q.hidden = false; }
+    location.href = lien; // tente d'ouvrir directement ; sinon, le bouton reste là
+  } else {
+    document.getElementById("titre").textContent = "Lien incomplet";
+    bouton.hidden = true;
+  }
+</script>
+</body>
+</html>
